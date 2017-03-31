@@ -13,7 +13,7 @@ Ruby's bundle is awesome.
 Installation
 ------------
 
-    go get github.com/mattn/gom
+    go get github.com/gophersgang/gb-gom
 
 Gomfile
 -------
@@ -32,7 +32,7 @@ Gomfile
     group :custom_group do
         gom 'github.com/golang/lint/golint'
     end
-    
+
 By default `gom install` install all packages, except those in the listed groups.
 You can install packages from groups based on the environment using flags (`development`, `test` & `production`) : `gom -test install`
 
@@ -43,19 +43,19 @@ Usage
 
 Create \_vendor directory and bundle packages into it
 
-    gom install
+    gb-gom install
 
 Build on current directory with \_vendor packages
 
-    gom build
+    gb-gom build
 
 Run tests on current directory with \_vendor packages
 
-    gom test
+    gb-gom test
 
 Generate .travis.yml that uses `gom test`
 
-    gom gen travis-yml
+    gb-gom gen travis-yml
 
 You can always change the name relative to the current `$GOPATH` directory using an environment variable: `GOM_VENDOR_NAME`
 
@@ -72,7 +72,7 @@ Writing Gomfile and bundle
     $ ls
     main.go
 
-    $ gom gen gomfile
+    $ gb-gom gen gomfile
 
     $ cat Gomfile
     gom 'github.com/daviddengcn/go-colortext'
@@ -88,21 +88,21 @@ Writing Gomfile and bundle
     \_vendor/src/github.com/daviddengcn
     \_vendor/src/github.com/mattn
 
-    $ gom build
+    $ gb-gom build
 
 If you want to bundle specified tag, branch or commit
 
     gom 'github.com/mattn/go-runewidth', :tag => 'tag_name'
     gom 'github.com/mattn/go-runewidth', :branch => 'branch_name'
     gom 'github.com/mattn/go-runewidth', :commit => 'commit_name'
-    
+
 If you want to bundle a repository that `go get` can't access
 
     gom 'github.com/username/repository', :command => 'git clone http://example.com/repository.git'
 
 If you want to change local repository directory with command 'git clone', also skipdep and insecure, which is useful in internal network environment.
 
-    gom 'github.com/username/repository', :private => 'true', :target => 'repository', :insecure=>'true', :skipdep=>'true' 
+    gom 'github.com/username/repository', :private => 'true', :target => 'repository', :insecure=>'true', :skipdep=>'true'
 
 Todo
 ----
