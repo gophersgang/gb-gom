@@ -301,24 +301,14 @@ func hasGoSource(p string) bool {
 }
 
 func (gom *Gom) Build(args []string) (err error) {
-	return gom.build(args, true)
+	return gom.build(args)
 }
 
-func (gom *Gom) build(args []string, move bool) (err error) {
+func (gom *Gom) build(args []string) (err error) {
 	var vendor string
 	vendor, err = filepath.Abs(vendorFolder)
 	if err != nil {
 		return err
-	}
-
-	if move && !isVendoringSupported {
-		err := moveSrcToVendorSrc(vendor)
-		if err != nil {
-			return err
-		}
-		defer func() {
-			err = moveSrcToVendor(vendor)
-		}()
 	}
 
 	installCmd := []string{"go", "get"}
@@ -390,47 +380,6 @@ func isIgnorePackage(pkg string) bool {
 		}
 	}
 	return false
-}
-
-func moveSrcToVendorSrc(vendor string) error {
-	vendorSrc := filepath.Join(vendor, "src")
-	dirs, err := readdirnames(vendor)
-	if err != nil {
-		return err
-	}
-	err = os.MkdirAll(vendorSrc, 0755)
-	if err != nil {
-		return err
-	}
-	for _, dir := range dirs {
-		if dir == "bin" || dir == "pkg" || dir == "src" {
-			continue
-		}
-		err = os.Rename(filepath.Join(vendor, dir), filepath.Join(vendorSrc, dir))
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func moveSrcToVendor(vendor string) error {
-	vendorSrc := filepath.Join(vendor, "src")
-	dirs, err := readdirnames(vendorSrc)
-	if err != nil {
-		return err
-	}
-	for _, dir := range dirs {
-		err = os.Rename(filepath.Join(vendorSrc, dir), filepath.Join(vendor, dir))
-		if err != nil {
-			return err
-		}
-	}
-	err = os.Remove(vendorSrc)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func readdirnames(dirname string) ([]string, error) {
@@ -535,11 +484,6 @@ func install(args []string) error {
 		goms = append(goms, gom)
 	}
 
-	err = moveSrcToVendorSrc(vendor)
-	if err != nil {
-		return err
-	}
-
 	// 2. Clone the repositories
 	for _, gom := range goms {
 		err = gom.Clone(args)
@@ -563,15 +507,10 @@ func install(args []string) error {
 				continue
 			}
 		}
-		err = gom.build(args, false)
+		err = gom.build(args)
 		if err != nil {
 			return err
 		}
-	}
-
-	err = moveSrcToVendor(vendor)
-	if err != nil {
-		return err
 	}
 
 	return nil
@@ -595,11 +534,6 @@ func update() error {
 		return err
 	}
 
-	err = moveSrcToVendorSrc(vendor)
-	if err != nil {
-		return err
-	}
-
 	for _, gom := range goms {
 		err = gom.Update()
 		if err != nil {
@@ -612,11 +546,6 @@ func update() error {
 				gom.options["commit"] = rev
 			}
 		}
-	}
-
-	err = moveSrcToVendor(vendor)
-	if err != nil {
-		return err
 	}
 
 	return writeGomfile("Gomfile", goms)
